@@ -1,0 +1,46 @@
+# build / generated outputs
+node_modules/
+dist/
+.astro/
+
+# Generated public assets (rebuilt on every deploy — don't commit)
+public/graph.json
+public/graph/
+public/blocks.json
+
+# Vault assets copied during build
+public/vault-assets/
+
+# Obsidian workspace state (machine-local, not useful in git)
+vault/.obsidian/workspace.json
+vault/.obsidian/workspace-mobile.json
+
+# Obsidian trash
+vault/.trash/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Editors
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+
+# Netlify
+.netlify
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

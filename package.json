@@ -1,0 +1,43 @@
+{
+  "name": "galaxybrain",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/sync-titles.mjs && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "sync-titles": "node scripts/sync-titles.mjs"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild",
+      "sharp"
+    ]
+  },
+  "dependencies": {
+    "@astrojs/netlify": "^6.6.4",
+    "@astrojs/react": "^4.4.2",
+    "@heavycircle/remark-obsidian": "^1.1.11",
+    "astro": "^5.17.1",
+    "fast-glob": "^3.3.3",
+    "gray-matter": "^4.0.3",
+    "lucide-react": "^0.575.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-force-graph-3d": "^1.29.1",
+    "rehype-raw": "^7.0.0",
+    "three": "^0.183.2",
+    "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.183.1",
+    "mdast": "^3.0.0",
+    "typescript": "^5.9.3",
+    "unified": "^11.0.5"
+  }
+}

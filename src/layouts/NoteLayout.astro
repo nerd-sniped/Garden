@@ -1,0 +1,243 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import LocalGraph from '../components/LocalGraph.tsx';
+import '../styles/note.css';
+import '../styles/callouts.css';
+
+interface Props {
+  title: string;
+  noteId?: string;
+  excerpt?: string;
+}
+const { title, noteId, excerpt } = Astro.props;
+// Derive a slug from the title if noteId not explicitly passed
+const focusId = noteId ?? title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+const baseUrl = import.meta.env.BASE_URL;
+const graphJsonUrl = `${baseUrl}graph.json`;
+const focusGraphUrl = `${baseUrl}?focus=${focusId}`;
+---
+
+<BaseLayout title={`${title} — GalaxyBrain`} description={excerpt}>
+  <div class="note-layout">
+    <main class="note-content">
+      <article class="prose">
+        <slot />
+      </article>
+    </main>
+
+    <aside class="note-sidebar">
+      <!-- ── View in graph ─────────────────────────────────── -->
+      <a
+        href={focusGraphUrl}
+        class="view-in-graph"
+        title="Open full graph focused on this note"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"/>
+          <circle cx="6" cy="12" r="3"/>
+          <circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        View in graph
+      </a>
+
+      <!-- ── Local graph (Phase 6) ───────────────────────────── -->
+      <LocalGraph client:only="react" noteId={focusId} />
+    </aside>
+  </div>
+</BaseLayout>
+
+{/* Client-side ghost-link detection — cross-references graph.json */}
+<script define:vars={{ graphJsonUrl }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch(graphJsonUrl)
+      .then((r) => r.json())
+      .then((data) => {
+        const published = new Set(
+          data.nodes.filter((n) => n.type === 'file').map((n) => n.id)
+        );
+        document.querySelectorAll('a[data-wikilink]').forEach((a) => {
+          const slug = a.getAttribute('data-wikilink');
+          if (slug && !published.has(slug)) {
+            a.classList.add('ghost-link');
+            a.title = 'Note not yet published';
+          }
+        });
+      })
+      .catch(() => { /* silently ignore — no ghost styling on fetch failure */ });
+  });
+</script>
+
+<style>
+  .note-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+    gap: 3rem;
+  }
+
+  .note-content {
+    min-width: 0;
+    max-width: 72ch;
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────────── */
+  .note-sidebar {
+    position: sticky;
+    top: 2rem;
+    height: calc(100vh - 4rem);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* hide scrollbar on Webkit while still scrollable */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .note-sidebar::-webkit-scrollbar        { width: 4px; }
+  .note-sidebar::-webkit-scrollbar-track  { background: transparent; }
+  .note-sidebar::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 2px; }
+
+  .view-in-graph {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--accent);
+    background: rgba(52, 152, 219, 0.08);
+    border: 1px solid rgba(52, 152, 219, 0.25);
+    border-radius: 20px;
+    padding: 5px 14px 5px 10px;
+    transition: background 0.15s, border-color 0.15s;
+    text-decoration: none;
+    width: fit-content;
+  }
+  .view-in-graph:hover {
+    background: rgba(52, 152, 219, 0.16);
+    border-color: rgba(52, 152, 219, 0.5);
+    text-decoration: none;
+  }
+
+  /* ── LocalGraph component styles ─────────────────────────── */
+  :global(.local-graph-wrapper) {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-top: 0.75rem;
+  }
+
+  :global(.local-graph-canvas) {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--graph-bg);
+    width: 100%;
+  }
+
+  :global(.local-graph-hint) {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 4px 0 8px;
+    opacity: 0.7;
+  }
+
+  :global(.local-graph-section) {
+    padding: 0.9rem 0 0.25rem;
+    border-top: 1px solid var(--border);
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  :global(.local-graph-section-heading) {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  :global(.local-graph-link-list) {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  :global(.local-graph-link) {
+    font-size: 0.82rem;
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  :global(.local-graph-link:hover) {
+    color: var(--text);
+    text-decoration: underline;
+  }
+
+  :global(.local-graph-link--ghost) {
+    color: var(--text-muted);
+    font-style: italic;
+    border-bottom: 1px dashed var(--text-muted);
+    cursor: default;
+    font-size: 0.82rem;
+  }
+
+  :global(.local-graph-tags) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  :global(.local-graph-tag) {
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.28);
+    padding: 2px 9px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  :global(.local-graph-tag:hover) {
+    background: rgba(231, 76, 60, 0.2);
+    border-color: rgba(231, 76, 60, 0.5);
+    text-decoration: none;
+  }
+
+  :global(.local-graph-error) {
+    font-size: 0.8rem;
+    color: #e74c3c;
+    padding: 0.75rem 0;
+  }
+
+  /* ── Mobile: sidebar stacks below content ───────────────── */
+  @media (max-width: 900px) {
+    .note-layout {
+      grid-template-columns: 1fr;
+      padding: 1.25rem;
+      gap: 2rem;
+    }
+    .note-content {
+      max-width: 100%;
+    }
+    .note-sidebar {
+      position: static;
+      height: auto;
+      overflow: visible;
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+  }
+</style>

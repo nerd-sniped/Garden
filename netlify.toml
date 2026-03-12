@@ -1,0 +1,41 @@
+[build]
+  command   = "pnpm astro clean && node scripts/sync-titles.mjs && pnpm build"
+  publish   = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  PNPM_VERSION = "9"
+
+[[headers]]
+  for = "/graph.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/graph/*.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/blocks.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
+
+[[redirects]]
+  from   = "/notes/build-your-own"
+  to     = "https://github.com/nerd-sniped/GalaxyBrain#readme"
+  status = 301
+  force  = true
+
+# SPA-style 404 fallback
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 404

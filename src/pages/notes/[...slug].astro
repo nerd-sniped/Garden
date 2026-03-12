@@ -1,0 +1,64 @@
+---
+import { getCollection, render } from 'astro:content';
+import NoteLayout from '../../layouts/NoteLayout.astro';
+import { slugify } from '../../lib/vault-parser.ts';
+
+export async function getStaticPaths() {
+  const allNotes = await getCollection('notes');
+  // Only render notes with publish: true
+  const published = allNotes.filter((note) => note.data.publish === true);
+
+  return published.map((note) => ({
+    params: { slug: slugify(note.id.split('/').pop()!) },
+    props: { note },
+  }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+
+const noteId = slugify(note.id.split('/').pop()!);
+// Obsidian filename (without .md) is always the canonical title — it overrides
+// whatever the frontmatter `title` field says, matching the vault-parser behaviour.
+const title = note.id.split('/').pop()!.replace(/\.md$/i, '');
+---
+
+<NoteLayout title={title} noteId={noteId} excerpt={undefined}>
+  <h1>{title}</h1>
+
+  {note.data.tags && note.data.tags.length > 0 && (
+    <div class="note-tags">
+      {note.data.tags.map((tag: string) => (
+        <span class="tag">#{tag}</span>
+      ))}
+    </div>
+  )}
+
+  <Content />
+</NoteLayout>
+
+<style>
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+  }
+
+  .note-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 2rem;
+  }
+
+  .tag {
+    font-size: 0.8rem;
+    background: rgba(231, 76, 60, 0.12);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.25);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-family: var(--font-mono);
+  }
+</style>
