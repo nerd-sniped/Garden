@@ -1,15 +1,12 @@
 ---
 publish: true
-title: "Welcome"
-tags: [meta/start]
-aliases: [home, start]
+title: Welcome
+tags:
+aliases:
 graph:
   shape: torusknot
   color: "#3498db"
   pinned: true
-  collapsible: true
-  callout: true
-  calloutText: "Start Here! Click Me!"
 ---
 
 # Welcome to GalaxyBrain
