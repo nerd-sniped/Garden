@@ -1,3 +1,12 @@
+---
+publish: true
+title: Creative Strategy and the Business of Design
+tags:
+aliases:
+graph:
+  shape: box
+  color: "#7f8c8d"
+---
 
 ![[Pasted image 20231208114903.jpg|300]]
 This is an overview from the perspective of a "creative" Person, learning how business works.  Some of this info is likely useful in the [[00_How to Develop a Product]] book outline. 

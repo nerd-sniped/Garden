@@ -1,8 +1,6 @@
 ---
 publish: true
 title: Welcome
-tags:
-aliases:
 graph:
   shape: torusknot
   color: "#3498db"

@@ -1,3 +1,13 @@
+---
+publish: true
+title: Business Books
+tags:
+aliases:
+graph:
+  shape: box
+  color: "#7f8c8d"
+---
+
 [[Building A Second Brain]]
 [[Building A Story Brand]]
 [[Creative Strategy and the Business of Design]]

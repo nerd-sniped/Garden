@@ -1,3 +1,13 @@
+---
+publish: true
+title: Fiction
+tags:
+aliases:
+graph:
+  shape: box
+  color: "#7f8c8d"
+---
+
 [[Children of Ruin]]
 [[1984 ]]
 [[Animal Farm]]
