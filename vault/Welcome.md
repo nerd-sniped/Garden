@@ -14,44 +14,36 @@ graph:
 
 # Welcome to GalaxyBrain
 
-This is the **Welcome Page** for the Galaxy Brain note system. 
 
-You're inside a live example of the site running with template notes. Each node in the graph on the landing page is one of the notes below. The edges are the `[[wikilinks]]` between them.
+Like many other people with a Digital Garden, I initially came across the concept through a [Maggie Appleton](https://maggieappleton.com/garden-history) post that gave the basic outline;
 
-> [!tip] Free & open — please consider supporting
-> I'm releasing this for free because fun side projects are better when they aren't hidden behind a paywall — not everything needs to feed the soul-crushing capitalism machine. That said, I still have to pay rent. If you've found this helpful or end up using it yourself, please consider [supporting me on Patreon](https://www.patreon.com/cw/Nerd_Sniped). ❤️
+> A digital garden is a collection of imperfect notes, essays, and ideas growing slowly over time.
 
-## What You Can Do Here
+A garden by it's very nature is a opinionated, I give _my_ take on [What is a Digital Garden](https://ryankelly.garden/digital-garden/what-is-a-digital-garden/) but it's helpful to have the context from Maggie.
 
-- **Explore** — rotate the 3D graph, click nodes to read notes
-- **Learn** — use the setup docs and README to understand how everything fits together
-- **Fork** — replace these notes with your own vault and deploy
+# Garden Architecture
 
-## Build Your Own Version
+Functionally these are non linear notes that represent the accumulation of knowledge over time. The garden metaphor is helpful as a framework to contextualize the maturity of the content. In my garden I have;
 
-For installation and deployment, use the GitHub README as the single source of truth:
+- #### Seeds
+    
+    - The Earliest nugget of an Idea, usually jotted down with little to no context
+- #### Budding
+    
+    - Active development and working on learning the concept, not yet enough to stand alone. (Tutorial Hell)
+- #### Evergreen
+    
+    - (Hopefully) fully formed ideas containing enough context to be read and appreciated alone. Often these will be refined and published as a more traditional Blog Post elsewhere.
+- #### Signpost
+    
+    - Notes that help point towards desire paths that have formed. These are good entry points for exploration, You don't have to stick to a garden path but the signposts can help show what's in that direction
+- #### Rocks
+    
+    - These are typically other peoples content. These will typically be a mix of my highlights of others content. I do my best to take that info and [Transclude](https://ryankelly.garden/digital-garden/transclude/) it where I can to keep sources accessible.
+- #### Gems
+    
+    - Collection of rocks, evergreen notes, and other resources, I think of these as high density value areas, potentially difficult to understand, knowledge dumps. Amazing for the right people but potentially too dense for a novice. These are typically what I distill and develop into my paid courses (have pay rent somehow) If you have the patients or already know most of the basics, you can self teach through these notes with some effort.
 
-- [GalaxyBrain README (Installation Guide)](https://github.com/nerd-sniped/GalaxyBrain#readme)
+I actively prune and keep the garden up to date as I walk through it. If you come across an area that is particularly unkempt, feel free to reach out and let me know and I'll bring some love back to the area. These notes are open source and public. I have other pieces of content on the internet that are much more formulaic, the majority of that content begins its life here as an unstructured thought, as it matures the are in which it fits often becomes more clear.
 
-Use these notes for background and feature details:
-
-1. **[[How to Use This Template]]** — architecture and build pipeline overview
-2. **[[GitHub Setup]]** — Git auth models and repo hygiene notes
-3. **[[Obsidian Setup]]** — vault conventions and recommended app settings
-4. **[[Netlify Deployment]]** — deployment model and troubleshooting
-5. **[[Writing Notes]]** — content authoring workflow
-
-For the full picture of how the pieces fit together, see [[How to Use This Template]].
-
-> [!tip] No terminal knowledge needed
-> Git authentication (step 1) is handled by a browser pop-up — no tokens or command-line setup required.
-
-## Explore This Demo
-
-Not ready to set up yet? Browse around — [[Getting Started]] explains how to navigate the graph, and [[Graph Features]] shows everything you can do with node shapes, colours, and filters.
-
-> Right-click any node in the graph to fly the camera to it. Click a tag node (diamond shape) to highlight all connected notes.
-
-## About This Graph
-
-Every published note becomes a node. Every `[[wikilink]]` becomes an edge. Tags become their own nodes. Links to notes that don't exist become **ghost nodes** — transparent wireframe spheres that show a note is referenced but not yet written.
+Part of the garden notes is an [Epistemic Disclosure](https://maggieappleton.com/epistemic-disclosure) Essentially I will do my best to articulate not only how well thought out the idea is but how confident I am in the content. Some things are going to be me tentatively writing down notes as I begin to comprehend a topic. Other notes are going to be based on Years of experience and are not nearly as tentative. Disclosing this type of Metadata can help bring a context and encourage useful feedback.
