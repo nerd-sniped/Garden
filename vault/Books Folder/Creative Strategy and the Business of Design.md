@@ -7,9 +7,8 @@ graph:
   shape: box
   color: "#7f8c8d"
 ---
-
-![[Pasted image 20231208114903.jpg|300]]
-This is an overview from the perspective of a "creative" Person, learning how business works.  Some of this info is likely useful in the [[00_How to Develop a Product]] book outline. 
+![[co_6avGqka-700.webp|300]]
+This is an overview from the perspective of a "Creative" Person, learning how business works.  
 
 He starts by defining a handful of words which will come up (I like this)
 [[Insight]] this is the context specific information one gains from looking at company data.  It's what allows us to make decisions on behalf of the customers. The better the data, the more accurate the prediction/better the outcome.  "Distilled Inspiration"  Strong insight inspires strong concepts.

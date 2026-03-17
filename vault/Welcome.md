@@ -4,11 +4,9 @@ title: Welcome
 graph:
   shape: torusknot
   color: "#3498db"
-  pinned: true
 ---
 
-# Welcome to GalaxyBrain
-
+# Welcome to My Digital Garden!
 
 Like many other people with a Digital Garden, I initially came across the concept through a [Maggie Appleton](https://maggieappleton.com/garden-history) post that gave the basic outline;
 

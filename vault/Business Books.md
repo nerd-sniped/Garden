@@ -32,7 +32,7 @@ graph:
 [[OverSubscribed]]
 [[Deep Work]]
 [[Your Next Five Moves]]
-[[Building a Second Brain]]
+[[Building A Second Brain]]
 [[Toilet Paper Entrepreneur]]
 [[Profit First]]
 [[Building a StoryBrand]]
