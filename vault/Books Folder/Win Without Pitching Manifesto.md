@@ -7,7 +7,7 @@ graph:
   shape: box
   color: "#7f8c8d"
 ---
-![[Pasted image 20240108130004.png|300]]
+![[Pasted image 20240108130004.png]]
 
 1. **Specialize**: Enns argues that by specializing, agencies can better define their expertise and attract ideal clients. Specialization allows a firm to develop deeper knowledge in a specific area, differentiate itself from competitors, and command higher fees. It's about choosing a niche market or service and becoming the authority in that space.
     

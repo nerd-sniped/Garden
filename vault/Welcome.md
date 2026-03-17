@@ -13,7 +13,8 @@ Like many other people with a Digital Garden, I initially came across the concep
 > A digital garden is a collection of imperfect notes, essays, and ideas growing slowly over time.
 
 A garden by it's very nature is a opinionated, I give _my_ take on [What is a Digital Garden](https://ryankelly.garden/digital-garden/what-is-a-digital-garden/) but it's helpful to have the context from Maggie.
-
+## Where to go From here? 
+Well currently I'm still working on how to best organize but for now [[Books!]] is a pretty good starting point
 # Garden Architecture
 
 Functionally these are non linear notes that represent the accumulation of knowledge over time. The garden metaphor is helpful as a framework to contextualize the maturity of the content. In my garden I have;
