@@ -1,22 +1,229 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import FullGraph from '../components/FullGraph';
-import '../styles/graph.css';
+
+// ── Featured jump-off points ─────────────────────────────────────────────────
+// Update these to whatever notes you want to surface for first-time visitors.
+const jumpOff = [
+  {
+    label: 'What is this?',
+    slug: 'digital-garden',
+    desc: 'The idea behind the garden and how to navigate it.',
+  },
+  {
+    label: 'The Bookshelf',
+    slug: 'books',
+    desc: "Books I've read across fiction, non-fiction, and business.",
+  },
+  {
+    label: 'Materials & Making',
+    slug: 'thermoform',
+    desc: 'Notes on plastics, fabrication, and physical creation.',
+  },
+  {
+    label: 'Business',
+    slug: 'business-books',
+    desc: 'Business books, strategy, and entrepreneurship.',
+  },
+];
+
+const base = import.meta.env.BASE_URL;
 ---
 
-<BaseLayout title="GalaxyBrain — Digital Garden" description="An interactive knowledge graph of linked notes.">
-  <div class="graph-page">
-    <!-- 3D graph — client:only because it needs WebGL / window globals -->
-    <FullGraph client:only="react" />
+<BaseLayout
+  title="Ryan's Garden"
+  description="A digital garden — non-linear notes on design, making, books, business, and whatever I'm currently thinking about."
+>
+  <div class="home-layout">
+
+    <!-- ── Left: intro panel ────────────────────────────────────────── -->
+    <div class="home-intro">
+      <div class="home-content">
+
+        <header class="home-header">
+          <h1>Ryan's Garden</h1>
+          <p class="home-tagline">
+            Notes on design, making, books, business, and whatever I'm currently thinking about.
+          </p>
+        </header>
+
+        <div class="home-body">
+          <p>
+            A digital garden is what happens before the blog post — rougher, more honest, and built around connections rather than chronology.
+            Notes here range from half-formed seeds to fully developed ideas. The rough edges are intentional.
+          </p>
+          <p>
+            The graph on the right <em>is</em> the navigation. Nodes are notes, edges are the links between them.
+            There's no set path — wander where you like.
+          </p>
+        </div>
+
+        <!-- ── Jump-off cards ──────────────────────────────────────── -->
+        <div class="home-jumpoff">
+          <p class="home-jumpoff-label">Start somewhere</p>
+          <div class="home-cards">
+            {jumpOff.map((item) => (
+              <a href={`${base}notes/${item.slug}`} class="home-card">
+                <span class="home-card-title">{item.label}</span>
+                <span class="home-card-desc">{item.desc}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <!-- ── Graph hint ──────────────────────────────────────────── -->
+        <p class="home-hint">
+          Or explore the graph directly — click any node to open a note, right-click to zoom in, click a tag to filter.
+        </p>
+
+      </div>
+    </div>
+
+    <!-- ── Right: 3D graph ─────────────────────────────────────────── -->
+    <div class="home-graph">
+      <FullGraph client:only="react" />
+    </div>
+
   </div>
 </BaseLayout>
 
 <style>
-  .graph-page {
-    width: 100vw;
+  /* ── Layout ─────────────────────────────────────────────────────── */
+  .home-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     height: 100vh;
     overflow: hidden;
+  }
+
+  /* ── Intro panel ─────────────────────────────────────────────────── */
+  .home-intro {
+    overflow-y: auto;
+    padding: 3.5rem 3rem 3.5rem 3.5rem;
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .home-intro::-webkit-scrollbar       { width: 4px; }
+  .home-intro::-webkit-scrollbar-track { background: transparent; }
+  .home-intro::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .home-content {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────────── */
+  .home-header h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.15;
+  }
+
+  .home-tagline {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  /* ── Body copy ───────────────────────────────────────────────────── */
+  .home-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .home-body p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .home-body em {
+    font-style: italic;
+    color: var(--text-primary);
+  }
+
+  /* ── Jump-off section ────────────────────────────────────────────── */
+  .home-jumpoff-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .home-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .home-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .home-card:hover {
+    border-color: var(--accent);
+    background: var(--bg-surface-2);
+    text-decoration: none;
+  }
+
+  .home-card-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .home-card-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+
+  /* ── Graph hint ─────────────────────────────────────────────────── */
+  .home-hint {
+    font-size: 0.77rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Graph panel ─────────────────────────────────────────────────── */
+  .home-graph {
     position: relative;
+    overflow: hidden;
     background: var(--graph-bg);
+  }
+
+  /* ── Mobile: stack vertically ─────────────────────────────────────── */
+  @media (max-width: 860px) {
+    .home-layout {
+      grid-template-columns: 1fr;
+      height: auto;
+      overflow: visible;
+    }
+    .home-intro {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+    }
+    .home-graph {
+      height: 65vh;
+    }
   }
 </style>
