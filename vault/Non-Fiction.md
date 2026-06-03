@@ -1,7 +1,11 @@
 ---
-publish: false
-title: "Non-Fiction"
-tags: []
+publish: true
+title: Non-Fiction
+tags:
+aliases:
+graph:
+  shape: box
+  color: "#7f8c8d"
 ---
 
 [[Tools of Titans: The Tactics, Routines, and Habits of Billionaires, Icons, and World-Class Performers]]

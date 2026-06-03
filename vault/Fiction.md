@@ -1,7 +1,11 @@
 ---
-publish: false
-title: "Fiction"
-tags: []
+publish: true
+title: Fiction
+tags:
+aliases:
+graph:
+  shape: box
+  color: "#7f8c8d"
 ---
 
 [[Children of Ruin]]

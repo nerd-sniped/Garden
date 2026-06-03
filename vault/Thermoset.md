@@ -1,7 +1,11 @@
 ---
-publish: false
-title: "Thermoset"
-tags: []
+publish: true
+title: Thermoset
+tags:
+aliases:
+graph:
+  shape: box
+  color: "#7f8c8d"
 ---
 
 Plastics that chemically polymerize and are *set* in their shape during that process. Adding heat can sometimes soften them a little but, but the polymer chains remain until they are broken down by catching on fire or denaturing.   These plastics are cast into their final form and resist heat well. 

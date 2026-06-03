@@ -1,0 +1,1 @@
+Realistically this should be called Adaptive sampling. It's essentially when blender decides to stop rendering certain sections because they are below the noise threshold. The Naïve way to increase quality on a noisy texture but that increases the samples everywhere. Manipulating the noise threshold value allows blender to determine how to handle the render on a per pixel level.

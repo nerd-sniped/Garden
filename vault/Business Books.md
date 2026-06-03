@@ -1,7 +1,11 @@
 ---
-publish: false
-title: "Business"
-tags: []
+publish: true
+title: Business Books
+tags:
+aliases:
+graph:
+  shape: box
+  color: "#7f8c8d"
 ---
 
 [[Building A Second Brain]]
@@ -28,7 +32,7 @@ tags: []
 [[OverSubscribed]]
 [[Deep Work]]
 [[Your Next Five Moves]]
-[[Building a Second Brain]]
+[[Building A Second Brain]]
 [[Toilet Paper Entrepreneur]]
 [[Profit First]]
 [[Building a StoryBrand]]
