@@ -51,7 +51,7 @@ function makePlusSprite(): THREE.Sprite {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function FullGraph() {
+export default function FullGraph({ showCallout: showCalloutProp = true }: { showCallout?: boolean }) {
   const fgRef = useRef<ForceGraphMethods | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -191,10 +191,10 @@ export default function FullGraph() {
   // The callout text comes from `graph.calloutText`.
 
   const calloutTarget = useMemo(() => {
-    if (!graphData) return null;
+    if (!graphData || !showCalloutProp) return null;
     return (graphData.nodes.find((n) => n.callout) ?? null) as
       (GraphNode & { x?: number; y?: number; z?: number }) | null;
-  }, [graphData]);
+  }, [graphData, showCalloutProp]);
 
   const calloutLabel = calloutTarget?.calloutText || 'Click to get started';
 

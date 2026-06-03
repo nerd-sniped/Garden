@@ -71,9 +71,18 @@ const base = import.meta.env.BASE_URL;
           </div>
         </div>
 
+        <!-- ── Full graph CTA ─────────────────────────────────────── -->
+        <a href={`${base}graph`} class="home-enter-graph">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          Explore the full graph
+        </a>
+
         <!-- ── Graph hint ──────────────────────────────────────────── -->
         <p class="home-hint">
-          Or explore the graph directly — click any node to open a note, right-click to zoom in, click a tag to filter.
+          Click any node to open a note &nbsp;·&nbsp; right-click to zoom &nbsp;·&nbsp; click a tag to filter
         </p>
 
       </div>
@@ -87,6 +96,11 @@ const base = import.meta.env.BASE_URL;
   </div>
 </BaseLayout>
 
+<style is:global>
+  /* Lock the home page to the viewport — prevents any outer page scroll */
+  html, body { overflow: hidden; height: 100%; }
+</style>
+
 <style>
   /* ── Layout ─────────────────────────────────────────────────────── */
   .home-layout {
@@ -99,10 +113,11 @@ const base = import.meta.env.BASE_URL;
   /* ── Intro panel ─────────────────────────────────────────────────── */
   .home-intro {
     overflow-y: auto;
-    padding: 3.5rem 3rem 3.5rem 3.5rem;
+    padding: 1.75rem 2rem 1.75rem 2.5rem;
     border-right: 1px solid var(--border);
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
@@ -115,34 +130,34 @@ const base = import.meta.env.BASE_URL;
     max-width: 520px;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.25rem;
   }
 
   /* ── Header ─────────────────────────────────────────────────────── */
   .home-header h1 {
-    font-size: 2.25rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.4rem;
     line-height: 1.15;
   }
 
   .home-tagline {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-secondary);
-    line-height: 1.55;
+    line-height: 1.5;
   }
 
   /* ── Body copy ───────────────────────────────────────────────────── */
   .home-body {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.6rem;
   }
   .home-body p {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
-    line-height: 1.7;
+    line-height: 1.65;
   }
   .home-body em {
     font-style: italic;
@@ -151,25 +166,25 @@ const base = import.meta.env.BASE_URL;
 
   /* ── Jump-off section ────────────────────────────────────────────── */
   .home-jumpoff-label {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--text-muted);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.6rem;
   }
 
   .home-cards {
     display: flex;
     flex-direction: column;
-    gap: 0.45rem;
+    gap: 0.35rem;
   }
 
   .home-card {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.8rem 1rem;
+    gap: 0.15rem;
+    padding: 0.6rem 0.875rem;
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     background: var(--bg-surface);
@@ -183,23 +198,45 @@ const base = import.meta.env.BASE_URL;
   }
 
   .home-card-title {
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--accent);
   }
 
   .home-card-desc {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
-    line-height: 1.45;
+    line-height: 1.4;
+  }
+
+  /* ── Full graph CTA ──────────────────────────────────────────────── */
+  .home-enter-graph {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(52, 152, 219, 0.08);
+    border: 1px solid rgba(52, 152, 219, 0.25);
+    border-radius: 20px;
+    padding: 6px 16px 6px 12px;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+    width: fit-content;
+  }
+  .home-enter-graph:hover {
+    background: rgba(52, 152, 219, 0.16);
+    border-color: rgba(52, 152, 219, 0.5);
+    text-decoration: none;
   }
 
   /* ── Graph hint ─────────────────────────────────────────────────── */
   .home-hint {
-    font-size: 0.77rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
-    line-height: 1.55;
-    padding-top: 0.25rem;
+    line-height: 1.5;
+    padding-top: 0.5rem;
     border-top: 1px solid var(--border);
   }
 
@@ -220,7 +257,8 @@ const base = import.meta.env.BASE_URL;
     .home-intro {
       border-right: none;
       border-bottom: 1px solid var(--border);
-      padding: 2rem 1.5rem;
+      padding: 1.5rem;
+      justify-content: flex-start;
     }
     .home-graph {
       height: 65vh;

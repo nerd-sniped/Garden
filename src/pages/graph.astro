@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import FullGraph from '../components/FullGraph';
+---
+
+<BaseLayout
+  title="Graph — Ryan's Garden"
+  description="Explore Ryan's digital garden as a full-screen 3D knowledge graph."
+>
+  <div class="graph-page">
+    <FullGraph client:only="react" showCallout={false} />
+  </div>
+</BaseLayout>
+
+<style is:global>
+  html, body { overflow: hidden; height: 100%; }
+</style>
+
+<style>
+  .graph-page {
+    width: 100vw;
+    height: 100vh;
+  }
+</style>
