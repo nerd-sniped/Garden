@@ -1,3 +1,9 @@
+---
+publish: false
+title: "Business"
+tags: []
+---
+
 [[Building A Second Brain]]
 [[Building A Story Brand]]
 [[Creative Strategy and the Business of Design]]

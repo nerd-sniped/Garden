@@ -1,3 +1,9 @@
+---
+publish: false
+title: "Sensors and Actuators for Control Systems"
+tags: []
+---
+
 Dan Gelbart
 ## Source
 [Video 1 - Introduction and History of Servo Systems](https://youtu.be/IhCadzAwbWI?si=zhdQ7e9n4ZNvWj9G)

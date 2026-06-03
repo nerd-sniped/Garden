@@ -1,3 +1,9 @@
+---
+publish: false
+title: "Books!"
+tags: []
+---
+
 *Last Updated Feb 2026*
 This is a list of Books I've read and enjoyed! 
 

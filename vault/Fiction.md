@@ -1,3 +1,9 @@
+---
+publish: false
+title: "Fiction"
+tags: []
+---
+
 [[Children of Ruin]]
 [[1984 ]]
 [[Animal Farm]]

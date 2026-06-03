@@ -1,3 +1,9 @@
+---
+publish: false
+title: "What is this Garden Thing"
+tags: []
+---
+
 Like many other people with a Digital Garden, I initially came across the concept through a [Maggie Appleton](https://maggieappleton.com/garden-history) post that gave the basic outline;
 
 > A digital garden is a collection of imperfect notes, essays, and ideas growing slowly over time.
