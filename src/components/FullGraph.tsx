@@ -182,7 +182,7 @@ export default function FullGraph({ showCallout: showCalloutProp = true }: { sho
         { x: found.x, y: found.y ?? 0, z: found.z ?? 0 },
         1500,
       );
-    }, 4000);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [focusNodeId, graphData]);
 
