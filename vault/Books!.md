@@ -8,6 +8,7 @@ aliases:
 graph:
   shape: box
   color: "#7f8c8d"
+  size: 20px
   
 
 ---

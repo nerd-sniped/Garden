@@ -1,7 +1,28 @@
 # GalaxyBrain — LLM Context Document
 
-> Last updated: Phase 8 complete.
+> Last updated: 2026-06-23 (Phase 8 complete — all 8 phases shipped)
 > Purpose: Give any future LLM session immediate, accurate context to continue development without re-deriving decisions from scratch.
+
+---
+
+## Table of Contents
+
+1. [What This Project Is](#what-this-project-is)
+2. [Tech Stack](#tech-stack)
+3. [Project Structure](#project-structure-current-state)
+4. [Development Phases](#development-phases)
+5. [Phase 5 — What Was Built](#phase-5--what-was-built)
+6. [Graph Data Contract](#graph-data-contract)
+7. [Frontmatter Schema](#frontmatter-schema)
+8. [Interaction Model](#interaction-model)
+9. [Node Visuals](#node-visuals)
+10. [Key Implementation Details](#key-implementation-details)
+11. [Phase 6 — What Was Built](#phase-6--what-was-built)
+12. [Phase 7 — What Was Built](#phase-7--what-was-built)
+13. [Phase 8 — What Was Built](#phase-8--what-was-built)
+14. [Design System](#design-system)
+15. [Open Design Questions](#open-design-questions)
+16. [Commands](#commands)
 
 ---
 
@@ -57,8 +78,8 @@ GalaxyBrain/
 │       ├── attachments/…
 │       └── notes/examples/…
 ├── .astro/                         ← Build-time generated data (gitignored)
-│   ├── vault-images.json           ← { “dialog.svg”: “/vault-assets/…”, … }
-│   └── block-index.json            ← { “rust/^ownership-intro”: “…”, “note-taking”: “…”, … }
+│   ├── vault-images.json           ← { "dialog.svg": "/vault-assets/…", … }
+│   └── block-index.json            ← { "rust/^ownership-intro": "…", "note-taking": "…", … }
 ├── src/
 │   ├── components/
 │   │   ├── FullGraph.tsx           ← Landing page React island (COMPLETE — see Phase 8 perf notes)
@@ -90,6 +111,8 @@ GalaxyBrain/
 │   │   ├── graph.css
 │   │   └── note.css                ← Prose styles + .vault-image-missing styles (Phase 8)
 │   └── content.config.ts           ← notes content collection
+├── scripts/
+│   └── sync-titles.mjs             ← Syncs note filenames → frontmatter titles; runs pre-build
 ├── .gitignore                      ← Comprehensive (Phase 8)
 ├── astro.config.mjs
 ├── tsconfig.json
@@ -339,6 +362,9 @@ The `@heavycircle/remark-obsidian` plugin sets `callout="type"` as a bare attrib
 ### Build pipeline (complete)
 Registered in `astro.config.mjs`:
 ```
+pre-build (package.json "build" script)
+  └── sync-titles.mjs    → syncs note filenames → frontmatter titles
+
 astro:config:done
   └── graph-builder      → public/graph.json, public/graph/[id].json
 
@@ -388,115 +414,7 @@ The markdown → HTML converter inside `remark-transclusion` is a lightweight re
 
 ### Image optimization note
 Vault images are served from `public/vault-assets/` as static files with `loading="lazy" decoding="async"`. Astro's WebP/AVIF pipeline only applies to files imported via the content layer from `src/assets/`. For raster PNG/JPG optimization a future phase could add `sharp` post-processing in `asset-collector` or re-route through `getImage()`.
----
 
-## Phase 8 — What Was Built
-
-### Sample vault content
-
-**20 notes total** (up from 15), **17 published**, **3 with `publish: false`**.
-
-New published notes:
-- `JavaScript.md` — `#programming/js`, `shape: torusknot`, `color: #f7df1e`. Links: `[[Vue.js]]`, `[[React Hooks]]`, `[[Node.js Ecosystem]]` (ghost nodes). Has code block, table, callout.
-- `Reading List.md` — `#books/fiction`, `#books/technical`. Contains a **full-note transclusion** `![[Getting Started]]` and a **block transclusion** `![[Note Taking#^cornell-method]]`. Links to ghost `[[The Left Hand of Darkness]]`.
-- `Projects.md` — `#projects/garden`, `collapsible: true`. Block transclusion `![[Digital Garden#^garden-definition]]`. Ghost links: `[[Rust Web Framework Experiment]]`, `[[CLI Note Search Tool]]`.
-
-New unpublished notes (invisible to the entire system):
-- `Consciousness Draft.md` — `publish: false`. Philosophy brain dump, links to published notes but creates no edges.
-- `Inbox.md` — `publish: false`. Unsorted capture inbox (PARA method).
-
-Existing notes enriched with required tag families:
-- `Rust.md` → `#programming/rust` added
-- `TypeScript.md`, `Web Dev.md` → `#programming/js` added
-- `Digital Garden.md` → `#projects/garden` added
-- `Note Taking.md` → `#books/technical` added
-
-**Tag families present:** `#programming/rust`, `#programming/js`, `#programming/web`, `#programming/systems`, `#books/fiction`, `#books/technical`, `#projects/garden`, `#meta/concepts`, plus standalone tags `#math`, `#tech`, `#tools`, `#productivity`.
-
-**Ghost nodes (>5):** Ownership Model, Algorithms, Data Structures, Dijkstra, Minimum Spanning Tree, Vue.js, React Hooks, Node.js Ecosystem, The Left Hand of Darkness, The Pragmatic Programmer, Rust Web Framework Experiment, CLI Note Search Tool, Roam Research.
-
-**Collapsible nodes:** `Programming.md` and `Projects.md` start collapsed.
-**Custom shapes:** box, cone, cylinder, dodecahedron, torus, torusknot, octahedron all present across notes.
-**Custom colours:** Rust.md `#F74C00`, TypeScript.md `#3178c6`, Web Dev.md `#e74c3c`, etc.
-
-**New images in `vault/attachments/`:**
-- `graph-preview.svg` — annotated graph mockup; embedded in `Welcome.md` via `![[graph-preview.svg]]`.
-- `rust-logo.svg` — Rust logo; embedded in `Rust.md` via `![[rust-logo.svg]]`.
-
-### Infrastructure files
-
-- **`.gitignore`** (replaced Astro starter default) — now covers: `node_modules/`, `dist/`, `.astro/`, `public/graph.json`, `public/graph/`, `public/blocks.json`, `src/assets/vault/`, `vault/.obsidian/workspace.json`, `vault/.obsidian/workspace-mobile.json`, `vault/.trash/`, `.env`, `.DS_Store`, `.netlify`.
-- **`netlify.toml`** (updated) — `command = "npm run build"` (was `pnpm build`), `NODE_VERSION = "22"` (was `20`), redirect from `/*` to `/index.html` with status `404` (was `/404`).
-- **`README.md`** (full rewrite) — project description, prerequisites table (Node 22+, Obsidian, Obsidian Git), 6-step setup guide (clone, install, open vault, configure Obsidian Git, dev, Netlify), complete frontmatter reference with all fields, publishing guide, graph appearance customization guide, architecture diagram, deploy pipeline diagram, commands table.
-
-### Error handling
-
-All error handling is **non-crashing by design** — failures degrade gracefully:
-
-**`src/lib/vault-parser.ts` — malformed frontmatter:**
-```typescript
-try {
-  parsed = matter(rawContent);
-} catch {
-  // Log warning, fall back to empty frontmatter → treated as publish: false
-  parsed = matter('');
-  parsed.content = rawContent;
-}
-```
-Note with invalid YAML is silently excluded from the site but does not abort the build.
-
-**`src/integrations/graph-builder.ts` — per-file `try/catch`:**
-```typescript
-const allNotes = mdFiles.flatMap((filePath) => {
-  try { ... return [parseNote(raw, filePath, vaultNotesRoot)]; }
-  catch (err) { log.warn(`Skipping malformed file: ...`); return []; }
-});
-```
-A single corrupted file is skipped; all other notes build normally.
-
-**`src/plugins/remark-transclusion.ts` — recursion depth + circular embed guard:**
-- Module-level `_embedDepth: number` counter and `_expandingNotes: Set<string>`.
-- `MAX_EMBED_DEPTH = 3` — if depth is exceeded, renders `<div class="transclusion-missing">⚠ Max embed depth…</div>`.
-- If `_expandingNotes` already contains the slug (A ⊃ B ⊃ A), renders a circular-embed warning instead of looping.
-- Only full-note embeds are depth-tracked; block embeds are single lookups and can’t recurse.
-
-**`src/plugins/remark-vault-images.ts` — broken-image placeholder:**
-- Previously: kept original `![[filename]]` text when the image was not found in the vault index.
-- Now: renders an inline `<span class="vault-image-missing">` with an SVG broken-image icon and the filename label. Also logs a `console.warn`.
-- CSS for `.vault-image-missing` and `.vault-image-missing-label` added to `src/styles/note.css`.
-
-**`src/components/FullGraph.tsx` and `LocalGraph.tsx` — fetch failure UI:**
-- Previously displayed a plain text error string.
-- Now shows a centred SVG alert icon + "Could not load graph" heading + error detail (FullGraph), or a compact `.local-graph-error` class div (LocalGraph).
-
-### Performance changes
-
-**`FullGraph.tsx` — stable `nodeThreeObject` across theme changes:**
-- Added `isDarkRef = useRef(isDark)` that is updated (`isDarkRef.current = isDark`) on every render.
-- `nodeThreeObject` callback reads `isDarkRef.current` instead of the `isDark` state variable, so the callback reference does not change when the theme toggles.
-- A separate `useEffect([isDark])` calls `fgRef.current?.refresh?.()` once per theme change, causing the graph to re-draw nodes in the new colour scheme **without recreating the entire callback** for every node.
-- Net effect: theme toggle causes exactly **one** node visual refresh instead of a full `nodeThreeObject` dependency change that would previously restart the force simulation.
-
-**`LocalGraph.tsx` — same `isDarkRef` pattern:**
-- Same `useRef`/`refresh()` approach applied to `LocalGraph` so its `nodeThreeObject` also stays stable.
-
-**`LocalGraph.tsx` — lazy initialisation via `IntersectionObserver`:**
-- `isVisible` state initialised to `false`.
-- `useEffect` sets up both a `ResizeObserver` (already existed) and an `IntersectionObserver` on the container div.
-- `IntersectionObserver` fires once when the container enters the viewport (with `rootMargin: '100px'` pre-buffering). On intersection: `setIsVisible(true)`, then `io.disconnect()`.
-- `ForceGraph3D` is only mounted when `isLoaded && isVisible`. Before that, a placeholder div shows "Scroll to view graph…" (or "Loading…" while data fetches).
-- On mobile where the sidebar scrolls below the fold, this prevents Three.js / WebGL initialisation until needed.
-
-**`LocalGraph.tsx` — Three.js cleanup on unmount:**
-```typescript
-useEffect(() => {
-  return () => {
-    (fgRef.current as any).pauseAnimation?.();
-    (fgRef.current as any).renderer?.().dispose?.();
-  };
-}, []);
-```
-`ForceGraph3D` creates a `WebGLRenderer` internally. Without disposal the GPU context count grows with each note navigation. `pauseAnimation()` stops the RAF loop; `renderer().dispose()` releases the WebGL resources.
 ---
 
 ## Phase 6 — What Was Built
@@ -610,6 +528,116 @@ HSL helpers (`hexToRgb`, `rgbToHsl`, `hslToRgb`, `darkenHex`) are pure functions
 
 ---
 
+## Phase 8 — What Was Built
+
+### Sample vault content
+
+**20 notes total** (up from 15), **17 published**, **3 with `publish: false`**.
+
+New published notes:
+- `JavaScript.md` — `#programming/js`, `shape: torusknot`, `color: #f7df1e`. Links: `[[Vue.js]]`, `[[React Hooks]]`, `[[Node.js Ecosystem]]` (ghost nodes). Has code block, table, callout.
+- `Reading List.md` — `#books/fiction`, `#books/technical`. Contains a **full-note transclusion** `![[Getting Started]]` and a **block transclusion** `![[Note Taking#^cornell-method]]`. Links to ghost `[[The Left Hand of Darkness]]`.
+- `Projects.md` — `#projects/garden`, `collapsible: true`. Block transclusion `![[Digital Garden#^garden-definition]]`. Ghost links: `[[Rust Web Framework Experiment]]`, `[[CLI Note Search Tool]]`.
+
+New unpublished notes (invisible to the entire system):
+- `Consciousness Draft.md` — `publish: false`. Philosophy brain dump, links to published notes but creates no edges.
+- `Inbox.md` — `publish: false`. Unsorted capture inbox (PARA method).
+
+Existing notes enriched with required tag families:
+- `Rust.md` → `#programming/rust` added
+- `TypeScript.md`, `Web Dev.md` → `#programming/js` added
+- `Digital Garden.md` → `#projects/garden` added
+- `Note Taking.md` → `#books/technical` added
+
+**Tag families present:** `#programming/rust`, `#programming/js`, `#programming/web`, `#programming/systems`, `#books/fiction`, `#books/technical`, `#projects/garden`, `#meta/concepts`, plus standalone tags `#math`, `#tech`, `#tools`, `#productivity`.
+
+**Ghost nodes (>5):** Ownership Model, Algorithms, Data Structures, Dijkstra, Minimum Spanning Tree, Vue.js, React Hooks, Node.js Ecosystem, The Left Hand of Darkness, The Pragmatic Programmer, Rust Web Framework Experiment, CLI Note Search Tool, Roam Research.
+
+**Collapsible nodes:** `Programming.md` and `Projects.md` start collapsed.
+**Custom shapes:** box, cone, cylinder, dodecahedron, torus, torusknot, octahedron all present across notes.
+**Custom colours:** Rust.md `#F74C00`, TypeScript.md `#3178c6`, Web Dev.md `#e74c3c`, etc.
+
+**New images in `vault/attachments/`:**
+- `graph-preview.svg` — annotated graph mockup; embedded in `Welcome.md` via `![[graph-preview.svg]]`.
+- `rust-logo.svg` — Rust logo; embedded in `Rust.md` via `![[rust-logo.svg]]`.
+
+### Infrastructure files
+
+- **`.gitignore`** (replaced Astro starter default) — now covers: `node_modules/`, `dist/`, `.astro/`, `public/graph.json`, `public/graph/`, `public/blocks.json`, `src/assets/vault/`, `vault/.obsidian/workspace.json`, `vault/.obsidian/workspace-mobile.json`, `vault/.trash/`, `.env`, `.DS_Store`, `.netlify`.
+- **`netlify.toml`** (updated) — `command = "npm run build"` (was `pnpm build`), `NODE_VERSION = "22"` (was `20`), redirect from `/*` to `/index.html` with status `404` (was `/404`).
+- **`README.md`** (full rewrite) — project description, prerequisites table (Node 22+, Obsidian, Obsidian Git), 6-step setup guide (clone, install, open vault, configure Obsidian Git, dev, Netlify), complete frontmatter reference with all fields, publishing guide, graph appearance customization guide, architecture diagram, deploy pipeline diagram, commands table.
+
+### Error handling
+
+All error handling is **non-crashing by design** — failures degrade gracefully:
+
+**`src/lib/vault-parser.ts` — malformed frontmatter:**
+```typescript
+try {
+  parsed = matter(rawContent);
+} catch {
+  // Log warning, fall back to empty frontmatter → treated as publish: false
+  parsed = matter('');
+  parsed.content = rawContent;
+}
+```
+Note with invalid YAML is silently excluded from the site but does not abort the build.
+
+**`src/integrations/graph-builder.ts` — per-file `try/catch`:**
+```typescript
+const allNotes = mdFiles.flatMap((filePath) => {
+  try { ... return [parseNote(raw, filePath, vaultNotesRoot)]; }
+  catch (err) { log.warn(`Skipping malformed file: ...`); return []; }
+});
+```
+A single corrupted file is skipped; all other notes build normally.
+
+**`src/plugins/remark-transclusion.ts` — recursion depth + circular embed guard:**
+- Module-level `_embedDepth: number` counter and `_expandingNotes: Set<string>`.
+- `MAX_EMBED_DEPTH = 3` — if depth is exceeded, renders `<div class="transclusion-missing">⚠ Max embed depth…</div>`.
+- If `_expandingNotes` already contains the slug (A ⊃ B ⊃ A), renders a circular-embed warning instead of looping.
+- Only full-note embeds are depth-tracked; block embeds are single lookups and can't recurse.
+
+**`src/plugins/remark-vault-images.ts` — broken-image placeholder:**
+- Previously: kept original `![[filename]]` text when the image was not found in the vault index.
+- Now: renders an inline `<span class="vault-image-missing">` with an SVG broken-image icon and the filename label. Also logs a `console.warn`.
+- CSS for `.vault-image-missing` and `.vault-image-missing-label` added to `src/styles/note.css`.
+
+**`src/components/FullGraph.tsx` and `LocalGraph.tsx` — fetch failure UI:**
+- Previously displayed a plain text error string.
+- Now shows a centred SVG alert icon + "Could not load graph" heading + error detail (FullGraph), or a compact `.local-graph-error` class div (LocalGraph).
+
+### Performance changes
+
+**`FullGraph.tsx` — stable `nodeThreeObject` across theme changes:**
+- Added `isDarkRef = useRef(isDark)` that is updated (`isDarkRef.current = isDark`) on every render.
+- `nodeThreeObject` callback reads `isDarkRef.current` instead of the `isDark` state variable, so the callback reference does not change when the theme toggles.
+- A separate `useEffect([isDark])` calls `fgRef.current?.refresh?.()` once per theme change, causing the graph to re-draw nodes in the new colour scheme **without recreating the entire callback** for every node.
+- Net effect: theme toggle causes exactly **one** node visual refresh instead of a full `nodeThreeObject` dependency change that would previously restart the force simulation.
+
+**`LocalGraph.tsx` — same `isDarkRef` pattern:**
+- Same `useRef`/`refresh()` approach applied to `LocalGraph` so its `nodeThreeObject` also stays stable.
+
+**`LocalGraph.tsx` — lazy initialisation via `IntersectionObserver`:**
+- `isVisible` state initialised to `false`.
+- `useEffect` sets up both a `ResizeObserver` (already existed) and an `IntersectionObserver` on the container div.
+- `IntersectionObserver` fires once when the container enters the viewport (with `rootMargin: '100px'` pre-buffering). On intersection: `setIsVisible(true)`, then `io.disconnect()`.
+- `ForceGraph3D` is only mounted when `isLoaded && isVisible`. Before that, a placeholder div shows "Scroll to view graph…" (or "Loading…" while data fetches).
+- On mobile where the sidebar scrolls below the fold, this prevents Three.js / WebGL initialisation until needed.
+
+**`LocalGraph.tsx` — Three.js cleanup on unmount:**
+```typescript
+useEffect(() => {
+  return () => {
+    (fgRef.current as any).pauseAnimation?.();
+    (fgRef.current as any).renderer?.().dispose?.();
+  };
+}, []);
+```
+`ForceGraph3D` creates a `WebGLRenderer` internally. Without disposal the GPU context count grows with each note navigation. `pauseAnimation()` stops the RAF loop; `renderer().dispose()` releases the WebGL resources.
+
+---
+
 ## Design System
 
 CSS custom properties are defined in `src/styles/global.css` on `html.dark` and `html.light` classes (Phase 7 — no more `:root` colour tokens). See the Phase 7 variable table above for all values.
@@ -633,12 +661,12 @@ CSS custom properties are defined in `src/styles/global.css` on `html.dark` and 
 ## Open Design Questions
 
 1. **Tag geometry**: All tags currently share one shape (octahedron). Should tag families (`#programming/rust`) get distinct shapes or colours?
-2. **Image optimisation**: Vault raster images bypass Astro’s WebP/AVIF pipeline. Worth adding `sharp` post-processing in `asset-collector` for PNG/JPG?
+2. **Image optimisation**: Vault raster images bypass Astro's WebP/AVIF pipeline. Worth adding `sharp` post-processing in `asset-collector` for PNG/JPG?
 3. **Graph always-dark option**: Should the 3D graph always use a dark background regardless of the page theme (space aesthetic)?
 4. **Local graph physics**: Currently uses `alphaDecay: 0.03`, `velocityDecay: 0.3`. Worth tuning for a tighter, faster-settling local graph?
 5. **Obsidian Git auto-push**: The README documents this workflow but it is not enforced or tested in CI. A `.github/actions` workflow for the Netlify deploy would make the pipeline fully automated without Obsidian Git.
 6. **Search**: No full-text search exists. Could be added with Pagefind (runs at build time, zero JS overhead).
-7. **Transclusion recursion**: Block embeds can’t recurse (single lookup), full-note embeds are capped at depth 3. Deeper nesting never naturally occurs in typical vaults but the cap is documented.
+7. **Transclusion recursion**: Block embeds can't recurse (single lookup), full-note embeds are capped at depth 3. Deeper nesting never naturally occurs in typical vaults but the cap is documented.
 
 ---
 
@@ -646,7 +674,7 @@ CSS custom properties are defined in `src/styles/global.css` on `html.dark` and 
 
 ```bash
 pnpm dev          # dev server at localhost:4321
-pnpm build        # production build → dist/
+pnpm build        # production build → dist/ (runs sync-titles.mjs first)
 pnpm preview      # serve dist/ locally
 ```
 
