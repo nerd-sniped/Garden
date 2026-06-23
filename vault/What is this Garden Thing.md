@@ -1,27 +1,15 @@
 ---
-publish: true
-title: Welcome
-graph:
-  shape: torusknot
-  color: "#3498db"
-  pinned: true
-  callout: true
-  calloutText: "New here? Start with this"
+publish: false
+title: "What is this Garden Thing"
+tags: []
 ---
-
-# Welcome to My Digital Garden!
 
 Like many other people with a Digital Garden, I initially came across the concept through a [Maggie Appleton](https://maggieappleton.com/garden-history) post that gave the basic outline;
 
 > A digital garden is a collection of imperfect notes, essays, and ideas growing slowly over time.
 
 A garden by it's very nature is a opinionated, I give _my_ take on [What is a Digital Garden](https://ryankelly.garden/digital-garden/what-is-a-digital-garden/) but it's helpful to have the context from Maggie.
-## Where to go From here? 
-Some good entry points depending on what you're after:
-- [[Books!]] — my full reading list across fiction, non-fiction, and business
-- [[Business Books]] — business strategy, entrepreneurship, and creative work
-- [[Digital Garden]] — what this whole thing is and why it exists
-- [[Thermoform]] / [[Thermoset]] — notes on materials and physical making
+
 # Garden Architecture
 
 Functionally these are non linear notes that represent the accumulation of knowledge over time. The garden metaphor is helpful as a framework to contextualize the maturity of the content. In my garden I have;

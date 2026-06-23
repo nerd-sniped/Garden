@@ -2,7 +2,6 @@
 publish: true
 title: Thermoset
 tags:
-
 aliases:
 graph:
   shape: box

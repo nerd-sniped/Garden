@@ -1,3 +1,8 @@
+---
+publish: false
+title: Sensors and Actuators for Control Systems
+tags:
+---
 
 Dan Gelbart
 ## Source

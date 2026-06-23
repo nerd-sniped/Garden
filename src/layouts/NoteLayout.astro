@@ -14,7 +14,7 @@ const { title, noteId, excerpt } = Astro.props;
 const focusId = noteId ?? title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 const baseUrl = import.meta.env.BASE_URL;
 const graphJsonUrl = `${baseUrl}graph.json`;
-const focusGraphUrl = `${baseUrl}?focus=${focusId}`;
+const focusGraphUrl = `${baseUrl}graph?focus=${focusId}`;
 ---
 
 <BaseLayout title={`${title} — GalaxyBrain`} description={excerpt}>

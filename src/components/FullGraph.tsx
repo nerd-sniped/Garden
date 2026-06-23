@@ -51,8 +51,9 @@ function makePlusSprite(): THREE.Sprite {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function FullGraph() {
+export default function FullGraph({ showCallout: showCalloutProp = true }: { showCallout?: boolean }) {
   const fgRef = useRef<ForceGraphMethods | undefined>(undefined);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // ── Data loading ───────────────────────────────────────────────────────────
   const [graphData, setGraphData] = useState<GraphData | null>(null);
@@ -181,7 +182,7 @@ export default function FullGraph() {
         { x: found.x, y: found.y ?? 0, z: found.z ?? 0 },
         1500,
       );
-    }, 4000);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [focusNodeId, graphData]);
 
@@ -190,10 +191,10 @@ export default function FullGraph() {
   // The callout text comes from `graph.calloutText`.
 
   const calloutTarget = useMemo(() => {
-    if (!graphData) return null;
+    if (!graphData || !showCalloutProp) return null;
     return (graphData.nodes.find((n) => n.callout) ?? null) as
       (GraphNode & { x?: number; y?: number; z?: number }) | null;
-  }, [graphData]);
+  }, [graphData, showCalloutProp]);
 
   const calloutLabel = calloutTarget?.calloutText || 'Click to get started';
 
@@ -212,6 +213,35 @@ export default function FullGraph() {
   }, []);
 
   // (calloutTarget is derived from graphData via useMemo — no separate tracking effect needed)
+
+  // Auto-fly camera to the callout node on first load so the visitor lands zoomed in on it.
+  const calloutCameraFlownRef = useRef(false);
+  useEffect(() => {
+    if (!calloutTarget || calloutCameraFlownRef.current) return;
+    const node = calloutTarget as GraphNode & { x?: number; y?: number; z?: number };
+
+    const tryFly = () => {
+      const fg = fgRef.current;
+      // Require the node to have moved meaningfully from origin — guards against
+      // flying to a compressed cluster before the sim has spread nodes apart.
+      if (!fg || node.x == null || Math.hypot(node.x, node.y ?? 0, node.z ?? 0) < 8) return false;
+      calloutCameraFlownRef.current = true;
+      const dist  = 45; // tighter than the default 80 — zoom in on the welcome node
+      const mag   = Math.hypot(node.x, node.y ?? 0, node.z ?? 0) || 1;
+      const ratio = 1 + dist / mag;
+      fg.cameraPosition(
+        { x: node.x * ratio, y: (node.y ?? 0) * ratio, z: (node.z ?? 0) * ratio },
+        { x: node.x, y: node.y ?? 0, z: node.z ?? 0 },
+        1200,
+      );
+      return true;
+    };
+
+    // Poll until the force sim has placed the node, then fly once.
+    const iv = setInterval(() => { if (tryFly()) clearInterval(iv); }, 120);
+    const cap = setTimeout(() => clearInterval(iv), 5000);
+    return () => { clearInterval(iv); clearTimeout(cap); };
+  }, [calloutTarget]);
 
   // Inject CSS keyframes once
   useEffect(() => {
@@ -248,13 +278,12 @@ export default function FullGraph() {
         const camera   = fg.camera?.();
         const renderer = fg.renderer?.();
         if (camera && renderer) {
-          const size = new THREE.Vector2();
-          renderer.getSize(size);
+          const canvasRect = renderer.domElement.getBoundingClientRect();
           const vec = new THREE.Vector3(node.x, node.y ?? 0, node.z ?? 0);
           vec.project(camera);
-          const sx = (vec.x  *  0.5 + 0.5) * size.x;
-          const sy = (-vec.y *  0.5 + 0.5) * size.y;
-          if (sx > 0 && sy > 0 && sx < size.x && sy < size.y) {
+          const sx = (vec.x  *  0.5 + 0.5) * canvasRect.width  + canvasRect.left;
+          const sy = (-vec.y *  0.5 + 0.5) * canvasRect.height + canvasRect.top;
+          if (sx > canvasRect.left && sy > canvasRect.top && sx < canvasRect.right && sy < canvasRect.bottom) {
             setCalloutPos({ x: sx, y: sy });
           }
         }
@@ -262,8 +291,9 @@ export default function FullGraph() {
       rafId = requestAnimationFrame(project);
     };
 
-    // Wait for the force simulation to partially settle before tracking
-    const startTimer   = setTimeout(() => { rafId = requestAnimationFrame(project); }, 2500);
+    // Start tracking almost immediately — the RAF loop won't set calloutPos until
+    // the node has valid projected coordinates anyway, so it's safe to start early.
+    const startTimer   = setTimeout(() => { rafId = requestAnimationFrame(project); }, 300);
     // Auto-dismiss after 30 s so return visitors aren't stuck with it
     const dismissTimer = setTimeout(() => dismissCallout(), 30000);
 
@@ -274,12 +304,19 @@ export default function FullGraph() {
     };
   }, [showCallout, dismissCallout]);
 
-  // ── Dimensions ────────────────────────────────────────────────────────────
-  const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
+  // ── Dimensions — track container element, not window ─────────────────────
+  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
   useEffect(() => {
-    const onResize = () => setDimensions({ width: window.innerWidth, height: window.innerHeight });
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    const container = containerRef.current;
+    if (!container) return;
+    const measure = () => {
+      const { width, height } = container.getBoundingClientRect();
+      if (width > 0 && height > 0) setDimensions({ width: Math.round(width), height: Math.round(height) });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(container);
+    return () => ro.disconnect();
   }, []);
 
   // ── Cursor tooltip + preview panel (both updated imperatively) ─────────────
@@ -574,26 +611,21 @@ export default function FullGraph() {
     return isDark ? '#ffffff22' : '#00000022';
   }, [isDark, highlightedTag, highlightedNodeIds]);
 
-  // ── Loading / error ────────────────────────────────────────────────────────
-  if (loadError) {
-    return (
-      <div style={{ width: '100vw', height: '100vh', background: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, color: '#e74c3c', fontFamily: 'sans-serif' }}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>Could not load graph</span>
-        <span style={{ fontSize: 12, opacity: 0.6 }}>{loadError}</span>
-      </div>
-    );
-  }
-
-  if (!graphData) {
-    return <div style={{ width: '100vw', height: '100vh', background: bgColor }} />;
-  }
-
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div
-      style={{ width: '100vw', height: '100vh', background: bgColor, overflow: 'hidden', position: 'relative' }}
+      ref={containerRef}
+      style={{ width: '100%', height: '100%', background: bgColor, overflow: 'hidden', position: 'relative' }}
     >
+      {loadError && (
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, color: '#e74c3c', fontFamily: 'sans-serif' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Could not load graph</span>
+          <span style={{ fontSize: 12, opacity: 0.6 }}>{loadError}</span>
+        </div>
+      )}
+      {!loadError && graphData && dimensions && (
+        <>
       <ForceGraph3D
         ref={fgRef}
         graphData={visibleData}
@@ -615,6 +647,7 @@ export default function FullGraph() {
         enableNodeDrag={true}
         enableNavigationControls={true}
         showNavInfo={false}
+        warmupTicks={120}
       />
 
       {/* Dark / light toggle has moved to BaseLayout */}
@@ -827,6 +860,8 @@ export default function FullGraph() {
           >✕</button>
         </div>,
         document.body,
+      )}
+        </>
       )}
     </div>
   );
