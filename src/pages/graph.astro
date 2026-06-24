@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import FullGraph from '../components/FullGraph';
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout
@@ -8,6 +9,12 @@ import FullGraph from '../components/FullGraph';
   description="Explore Ryan's digital garden as a full-screen 3D knowledge graph."
 >
   <div class="graph-page">
+    <a href={base} class="graph-nav-home" aria-label="Back to home">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Home
+    </a>
     <FullGraph client:only="react" showCallout={false} />
   </div>
 </BaseLayout>
@@ -20,5 +27,33 @@ import FullGraph from '../components/FullGraph';
   .graph-page {
     width: 100vw;
     height: 100vh;
+    position: relative;
+  }
+
+  .graph-nav-home {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 200;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 7px 14px 7px 10px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: color-mix(in srgb, var(--bg-surface) 90%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    text-decoration: none;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: background 0.15s, color 0.15s;
+  }
+  .graph-nav-home:hover {
+    color: var(--text-primary);
+    background: var(--bg-surface);
+    text-decoration: none;
   }
 </style>

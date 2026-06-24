@@ -18,33 +18,50 @@ const focusGraphUrl = `${baseUrl}graph?focus=${focusId}`;
 ---
 
 <BaseLayout title={`${title} — GalaxyBrain`} description={excerpt}>
-  <div class="note-layout">
-    <main class="note-content">
-      <article class="prose">
-        <slot />
-      </article>
-    </main>
+  <div class="note-shell">
 
-    <aside class="note-sidebar">
-      <!-- ── View in graph ─────────────────────────────────── -->
-      <a
-        href={focusGraphUrl}
-        class="view-in-graph"
-        title="Open full graph focused on this note"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="18" cy="5" r="3"/>
-          <circle cx="6" cy="12" r="3"/>
-          <circle cx="18" cy="19" r="3"/>
-          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+    <!-- ── Top nav ───────────────────────────────────────────────── -->
+    <nav class="note-nav" aria-label="Site navigation">
+      <a href={baseUrl} class="note-nav-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
         </svg>
-        View in graph
+        Garden
       </a>
+      <span class="note-nav-sep" aria-hidden="true">/</span>
+      <span class="note-nav-title">{title}</span>
+    </nav>
 
-      <!-- ── Local graph (Phase 6) ───────────────────────────── -->
-      <LocalGraph client:only="react" noteId={focusId} />
-    </aside>
+    <!-- ── Two-column body ───────────────────────────────────────── -->
+    <div class="note-layout">
+      <main class="note-content">
+        <article class="prose">
+          <slot />
+        </article>
+      </main>
+
+      <aside class="note-sidebar">
+        <!-- ── View in graph ─────────────────────────────────── -->
+        <a
+          href={focusGraphUrl}
+          class="view-in-graph"
+          title="Open full graph focused on this note"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          View in graph
+        </a>
+
+        <!-- ── Local graph ─────────────────────────────────────── -->
+        <LocalGraph client:only="react" noteId={focusId} />
+      </aside>
+    </div>
+
   </div>
 </BaseLayout>
 
@@ -70,14 +87,73 @@ const focusGraphUrl = `${baseUrl}graph?focus=${focusId}`;
 </script>
 
 <style>
+  /* ── Shell ──────────────────────────────────────────────────── */
+  .note-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Top nav ─────────────────────────────────────────────────── */
+  .note-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 48px;
+    padding: 0 2rem;
+    background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .note-nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.15s;
+    padding: 4px 0;
+  }
+  .note-nav-back:hover {
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .note-nav-sep {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .note-nav-title {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ── Two-column layout ───────────────────────────────────────── */
   .note-layout {
     display: grid;
     grid-template-columns: 1fr 300px;
-    min-height: 100vh;
+    flex: 1;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 2rem 2rem 4rem;
+    padding: 2.5rem 2rem 4rem;
     gap: 3rem;
+    width: 100%;
   }
 
   .note-content {
@@ -88,14 +164,13 @@ const focusGraphUrl = `${baseUrl}graph?focus=${focusId}`;
   /* ── Sidebar ─────────────────────────────────────────────── */
   .note-sidebar {
     position: sticky;
-    top: 2rem;
-    height: calc(100vh - 4rem);
+    top: calc(48px + 2rem);
+    height: calc(100vh - 48px - 4rem);
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 0;
-    /* hide scrollbar on Webkit while still scrollable */
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
@@ -109,8 +184,8 @@ const focusGraphUrl = `${baseUrl}graph?focus=${focusId}`;
     gap: 0.4rem;
     font-size: 0.8rem;
     color: var(--accent);
-    background: rgba(52, 152, 219, 0.08);
-    border: 1px solid rgba(52, 152, 219, 0.25);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
     border-radius: 20px;
     padding: 5px 14px 5px 10px;
     transition: background 0.15s, border-color 0.15s;
@@ -118,8 +193,8 @@ const focusGraphUrl = `${baseUrl}graph?focus=${focusId}`;
     width: fit-content;
   }
   .view-in-graph:hover {
-    background: rgba(52, 152, 219, 0.16);
-    border-color: rgba(52, 152, 219, 0.5);
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
     text-decoration: none;
   }
 
@@ -222,11 +297,18 @@ const focusGraphUrl = `${baseUrl}graph?focus=${focusId}`;
     padding: 0.75rem 0;
   }
 
-  /* ── Mobile: sidebar stacks below content ───────────────── */
+  /* ── Mobile ──────────────────────────────────────────────── */
   @media (max-width: 900px) {
+    .note-nav {
+      padding: 0 1.25rem;
+    }
+    .note-nav-sep,
+    .note-nav-title {
+      display: none;
+    }
     .note-layout {
       grid-template-columns: 1fr;
-      padding: 1.25rem;
+      padding: 1.5rem 1.25rem 3rem;
       gap: 2rem;
     }
     .note-content {
