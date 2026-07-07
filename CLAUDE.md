@@ -69,10 +69,10 @@ vault/                  ← Obsidian vault — all content here
 src/
   components/
     FullGraph.tsx        ← Landing page 3D graph (React island, client:only)
-    LocalGraph.tsx       ← Note sidebar mini-graph (React island, client:only)
+    LocalGraph.tsx       ← Note sidebar graph — same full graph.json as the landing page, camera focused on the current note (React island, client:only)
     GraphNodeFactory.ts  ← shape string → Three.js geometry
   integrations/
-    graph-builder.ts     ← Builds graph.json + per-note JSONs at build time
+    graph-builder.ts     ← Builds graph.json at build time
     asset-collector.ts   ← Copies vault images → public/vault-assets/
     block-indexer.ts     ← Indexes ^block-id markers for transclusion
   layouts/
@@ -103,8 +103,7 @@ scripts/
   sync-titles.mjs        ← Repairs frontmatter (strips blank lines, syncs title to filename)
 
 public/
-  graph.json             ← Full graph data (generated, gitignored)
-  graph/[id].json        ← Per-note 1-hop neighbourhood (generated, gitignored)
+  graph.json             ← Full graph data — consumed by both the landing page and the note sidebar (generated, gitignored)
   vault-assets/          ← Copied vault images (generated)
   favicon.svg / .ico     ← Site icons
   GalaxyGIF.dark.gif     ← Demo GIF for README
@@ -129,7 +128,7 @@ pnpm sync-titles  # Repair frontmatter in vault without full build
 
 ```
 astro:config:done
-  └── graph-builder → public/graph.json, public/graph/[id].json
+  └── graph-builder → public/graph.json
 
 astro:build:start
   ├── asset-collector → public/vault-assets/, .astro/vault-images.json
@@ -185,9 +184,12 @@ Ghost links in note prose render with dashed underline and `--link-ghost` color.
 - `?highlight=tag:name` URL param → activate tag filter on load
 
 **Local graph (note sidebar):**
-- Left-click file node (first click) → fetch + merge its neighbourhood, prime for nav
-- Left-click file node (second click) → navigate
-- Tag pills → `/?highlight=<tagId>` on full graph
+- Loads the entire vault graph (same `graph.json` as the landing page) — not just the current note's neighbourhood
+- Camera auto-flies to and zooms in on the current note once the force simulation settles
+- Left-click file node → navigate directly (every node is already visible, so there's no expand step)
+- Left-click ghost node → "Note not yet created" toast; tag nodes are a no-op in the 3D view
+- Right-click any node → camera fly-to
+- Tag pills (in the sidebar list) → `/?highlight=<tagId>` on full graph
 
 **`SHOW_BUILD_CTA` constant** in `FullGraph.tsx` — set to `false` once Ryan's own content replaces template notes.
 

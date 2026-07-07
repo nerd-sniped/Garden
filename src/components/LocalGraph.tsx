@@ -4,19 +4,18 @@ import type { ForceGraphMethods } from 'react-force-graph-3d';
 import * as THREE from 'three';
 import { withPublicBase } from '../lib/public-path';
 import { buildNodeObject } from './GraphNodeFactory';
-import type { GraphNode, GraphLink } from '../lib/types';
+import type { GraphData, GraphNode } from '../lib/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface LocalGraphData {
-  nodes: GraphNode[];
-  links: GraphLink[];
-  backlinks: Array<{ id: string; name: string; path: string | null }>;
-  forwardLinks: Array<{ id: string; name: string; path: string | null }>;
-}
-
 interface LocalGraphProps {
   noteId: string;
+}
+
+interface NoteRef {
+  id: string;
+  name: string;
+  path: string | null;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -68,79 +67,62 @@ export default function LocalGraph({ noteId }: LocalGraphProps) {
     (fgRef.current as { refresh?: () => void } | undefined)?.refresh?.();
   }, [isDark]);
 
-  // ── Graph state ────────────────────────────────────────────────────────────
-  const [nodes, setNodes] = useState<Map<string, GraphNode>>(new Map());
-  const [links, setLinks] = useState<GraphLink[]>([]);
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-  const [clickedOnce, setClickedOnce] = useState<Set<string>>(new Set());
+  // ── Graph state — the whole vault graph, same data as the landing page ────
+  const [graphData, setGraphData] = useState<GraphData | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  // ── Sidebar data (from initial fetch) ─────────────────────────────────────
-  const [backlinks, setBacklinks] = useState<LocalGraphData['backlinks']>([]);
-  const [forwardLinks, setForwardLinks] = useState<LocalGraphData['forwardLinks']>([]);
-  const [tags, setTags] = useState<GraphNode[]>([]);
-  const [ghostForwardLinks, setGhostForwardLinks] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
+  useEffect(() => {
+    fetch(withPublicBase('/graph.json'))
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() as Promise<GraphData>; })
+      .then(setGraphData)
+      .catch((err: unknown) => setLoadError(String(err)));
+  }, []);
+
+  // ── Sidebar lists — derived from the full graph relative to this note ─────
+  const { backlinks, forwardLinks, tags, ghostForwardLinks } = useMemo(() => {
+    if (!graphData) {
+      return {
+        backlinks: [] as NoteRef[],
+        forwardLinks: [] as NoteRef[],
+        tags: [] as GraphNode[],
+        ghostForwardLinks: [] as Array<{ id: string; name: string }>,
+      };
+    }
+
+    const nodeMap = new Map(graphData.nodes.map((n) => [n.id, n]));
+
+    const backlinkIds = new Set<string>();
+    graphData.links.forEach((l) => {
+      if (l.type !== 'wikilink') return;
+      if (resolveId(l.target) === noteId) backlinkIds.add(resolveId(l.source));
+    });
+    const backlinks: NoteRef[] = [...backlinkIds]
+      .map((id) => nodeMap.get(id))
+      .filter((n): n is GraphNode => n?.type === 'file')
+      .map((n) => ({ id: n.id, name: n.name, path: n.path }));
+
+    const forwardLinks: NoteRef[] = [];
+    const ghostForwardLinks: Array<{ id: string; name: string }> = [];
+    const tagNodes: GraphNode[] = [];
+
+    graphData.links.forEach((l) => {
+      if (resolveId(l.source) !== noteId) return;
+      const target = nodeMap.get(resolveId(l.target));
+      if (!target) return;
+      if (l.type === 'wikilink' && target.type === 'file') {
+        forwardLinks.push({ id: target.id, name: target.name, path: target.path });
+      } else if (l.type === 'wikilink' && target.type === 'ghost') {
+        ghostForwardLinks.push({ id: target.id, name: target.name });
+      } else if (l.type === 'file-tag' && target.type === 'tag') {
+        tagNodes.push(target);
+      }
+    });
+
+    return { backlinks, forwardLinks, tags: tagNodes, ghostForwardLinks };
+  }, [graphData, noteId]);
 
   // ── UI state ───────────────────────────────────────────────────────────────
   const [ghostTooltip, setGhostTooltip] = useState<{ x: number; y: number } | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  // ── Merge helper ──────────────────────────────────────────────────────────
-  const mergeInto = useCallback((data: { nodes: GraphNode[]; links: GraphLink[] }) => {
-    setNodes((prev) => {
-      const next = new Map(prev);
-      data.nodes.forEach((n) => { if (!next.has(n.id)) next.set(n.id, n); });
-      return next;
-    });
-    setLinks((prev) => {
-      const existing = new Set(prev.map((l) => `${resolveId(l.source)}→${resolveId(l.target)}`));
-      const incoming = data.links.filter(
-        (l) => !existing.has(`${resolveId(l.source)}→${resolveId(l.target)}`),
-      );
-      return incoming.length ? [...prev, ...incoming] : prev;
-    });
-  }, []);
-
-  // ── Initial load ───────────────────────────────────────────────────────────
-  useEffect(() => {
-    fetch(withPublicBase(`/graph/${noteId}.json`))
-      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() as Promise<LocalGraphData>; })
-      .then((data) => {
-        mergeInto(data);
-        setExpandedNodes(new Set([noteId]));
-        setBacklinks(data.backlinks ?? []);
-        setForwardLinks(data.forwardLinks ?? []);
-
-        // Derive tags and ghost forward links from nodes array
-        const nodeMap = new Map(data.nodes.map((n) => [n.id, n]));
-        const tagNodes: GraphNode[] = [];
-        const ghostFwd: Array<{ id: string; name: string }> = [];
-
-        data.links.forEach((l) => {
-          const src = resolveId(l.source);
-          const tgt = resolveId(l.target);
-          if (src === noteId && l.type === 'file-tag') {
-            const t = nodeMap.get(tgt);
-            if (t && t.type === 'tag') tagNodes.push(t);
-          }
-          if (src === noteId && l.type === 'wikilink') {
-            const t = nodeMap.get(tgt);
-            if (t && t.type === 'ghost') ghostFwd.push({ id: t.id, name: t.name });
-          }
-        });
-
-        setTags(tagNodes);
-        setGhostForwardLinks(ghostFwd);
-      })
-      .catch((err: unknown) => setLoadError(String(err)));
-  }, [noteId, mergeInto]);
-
-  // ── graphData for ForceGraph3D ────────────────────────────────────────────
-  const graphData = useMemo(() => ({
-    nodes: Array.from(nodes.values()),
-    links,
-  }), [nodes, links]);
 
   // ── Container width (responsive) ──────────────────────────────────────────
   const containerRef = useRef<HTMLDivElement>(null);
@@ -193,12 +175,42 @@ export default function LocalGraph({ noteId }: LocalGraphProps) {
     };
   }, []);
 
+  // ── Camera: fly to and zoom in on the note being viewed ────────────────────
+  const cameraFlownRef = useRef(false);
+  useEffect(() => {
+    if (!graphData || !isVisible) return;
+    cameraFlownRef.current = false;
+
+    const tryFly = () => {
+      const fg = fgRef.current;
+      const node = graphData.nodes.find((n) => n.id === noteId) as
+        | (GraphNode & { x?: number; y?: number; z?: number })
+        | undefined;
+      // Require the node to have moved meaningfully from origin — guards against
+      // flying to a compressed cluster before the sim has spread nodes apart.
+      if (!fg || !node || node.x == null || Math.hypot(node.x, node.y ?? 0, node.z ?? 0) < 4) return false;
+      cameraFlownRef.current = true;
+      const dist  = 60;
+      const mag   = Math.hypot(node.x, node.y ?? 0, node.z ?? 0) || 1;
+      const ratio = 1 + dist / mag;
+      fg.cameraPosition(
+        { x: node.x * ratio, y: (node.y ?? 0) * ratio, z: (node.z ?? 0) * ratio },
+        { x: node.x, y: node.y ?? 0, z: node.z ?? 0 },
+        1200,
+      );
+      return true;
+    };
+
+    const iv = setInterval(() => { if (tryFly()) clearInterval(iv); }, 120);
+    const cap = setTimeout(() => clearInterval(iv), 6000);
+    return () => { clearInterval(iv); clearTimeout(cap); };
+  }, [graphData, isVisible, noteId]);
+
   // ── Node Three.js visuals ──────────────────────────────────────────────────
   const nodeThreeObject = useCallback(
     (rawNode: object) => {
       const node = rawNode as GraphNode;
       const isCurrentNote = node.id === noteId;
-      const isPrimed      = clickedOnce.has(node.id) && !isCurrentNote;
 
       const group = new THREE.Group();
       const mesh  = buildNodeObject(node.type, node.shape, node.color, node.val, !isDarkRef.current);
@@ -220,25 +232,10 @@ export default function LocalGraph({ noteId }: LocalGraphProps) {
         group.add(light);
       }
 
-      if (isPrimed) {
-        // Pulsing ring: "click again to open"
-        const scale   = Math.cbrt(node.val) * 1.2;
-        const ringGeo = new THREE.RingGeometry(scale * 1.3, scale * 1.8, 20);
-        const ringMat = new THREE.MeshBasicMaterial({
-          color:       0xffffff,
-          transparent: true,
-          opacity:     0.45,
-          side:        THREE.DoubleSide,
-          depthTest:   false,
-        });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        group.add(ring);
-      }
-
       group.add(mesh);
       return group;
     },
-    [noteId, clickedOnce],
+    [noteId],
   );
 
   // ── Hover tooltip (imperative) ────────────────────────────────────────────
@@ -252,11 +249,10 @@ export default function LocalGraph({ noteId }: LocalGraphProps) {
       const node = rawNode as GraphNode;
 
       let content: string;
-      if (node.type === 'ghost')                              content = `${node.name}\n(Note not yet created)`;
-      else if (node.type === 'tag')                           content = node.name;
-      else if (clickedOnce.has(node.id) && node.id !== noteId) content = `${node.name}\n▶ Click again to open`;
-      else if (node.id === noteId)                            content = `${node.name}\n(current note)`;
-      else                                                    content = `${node.name}\n▶ Click to expand`;
+      if (node.type === 'ghost')   content = `${node.name}\n(Note not yet created)`;
+      else if (node.type === 'tag') content = node.name;
+      else if (node.id === noteId)  content = `${node.name}\n(current note)`;
+      else                          content = `${node.name}\n▶ Click to open`;
 
       el.textContent        = content;
       el.style.display      = 'block';
@@ -264,7 +260,7 @@ export default function LocalGraph({ noteId }: LocalGraphProps) {
       el.style.color        = isDark ? '#e0e0e0' : '#111111';
       el.style.borderColor  = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.14)';
     },
-    [noteId, clickedOnce, isDark],
+    [noteId, isDark],
   );
 
   // Use a native document listener — the Three.js canvas consumes pointer events
@@ -280,12 +276,12 @@ export default function LocalGraph({ noteId }: LocalGraphProps) {
     return () => document.removeEventListener('mousemove', onMove);
   }, []);
 
-  // ── Node click: progressive expansion ─────────────────────────────────────
+  // ── Node click: navigate straight away since every node is already visible ─
   const handleNodeClick = useCallback(
     (rawNode: object, event: MouseEvent) => {
       const node = rawNode as GraphNode;
 
-      // Tags: no-op in local graph
+      // Tags: no-op in local graph (use the tag pills below to filter the full graph)
       if (node.type === 'tag') return;
 
       // Ghost: brief tooltip
@@ -298,28 +294,9 @@ export default function LocalGraph({ noteId }: LocalGraphProps) {
       // Current note: no-op
       if (node.id === noteId) return;
 
-      if (!clickedOnce.has(node.id)) {
-        // First click: expand neighbours
-        setClickedOnce((p) => new Set([...p, node.id]));
-
-        if (!expandedNodes.has(node.id)) {
-          fetch(withPublicBase(`/graph/${node.id}.json`))
-            .then((r) => { if (!r.ok) return null; return r.json() as Promise<LocalGraphData>; })
-            .then((data) => {
-              if (data) {
-                mergeInto(data);
-                setExpandedNodes((p) => new Set([...p, node.id]));
-              }
-            })
-            .catch(() => { /* silently ignore */ });
-        }
-        return;
-      }
-
-      // Second click: navigate
       if (node.path) window.location.href = node.path;
     },
-    [noteId, clickedOnce, expandedNodes, mergeInto],
+    [noteId],
   );
 
   // ── Right-click: fly camera ────────────────────────────────────────────────
@@ -352,7 +329,7 @@ export default function LocalGraph({ noteId }: LocalGraphProps) {
     );
   }
 
-  const isLoaded = nodes.size > 0;
+  const isLoaded = graphData !== null;
 
   return (
     <div className="local-graph-wrapper">
@@ -403,6 +380,7 @@ export default function LocalGraph({ noteId }: LocalGraphProps) {
             showNavInfo={false}
             d3AlphaDecay={0.03}
             d3VelocityDecay={0.3}
+            warmupTicks={120}
           />
         )}
 
@@ -451,7 +429,7 @@ export default function LocalGraph({ noteId }: LocalGraphProps) {
       {/* ── Hint ────────────────────────────────────────────── */}
       {isLoaded && (
         <div className="local-graph-hint">
-          Click to expand · Click again to open · Right-click to focus
+          Click to open · Right-click to focus
         </div>
       )}
 

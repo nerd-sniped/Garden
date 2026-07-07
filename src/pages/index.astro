@@ -13,7 +13,7 @@ const randomSlugs = publishedNotes.map(n => slugify(n.id.split('/').pop()!));
 const jumpOff = [
   {
     label: 'What is this?',
-    slug: 'digital-garden',
+    slug: 'welcome',
     desc: 'The idea behind the garden and how to navigate it.',
   },
   {
@@ -32,7 +32,7 @@ const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout
-  title="Ryan's Galaxy Brain (Digital Garden)"
+  title="Ryan's Digital Garden"
   description="A digital garden — non-linear notes on design, making, books, business, and whatever I'm currently thinking about."
 >
   <div class="home-layout">
@@ -42,20 +42,20 @@ const base = import.meta.env.BASE_URL;
       <div class="home-content">
 
         <header class="home-header">
-          <h1>Ryan's Galaxy Brain (Digital Garden)</h1>
+          <h1>Ryan's Digital Garden</h1>
           <p class="home-tagline">
             Notes on design, making, books, business, and whatever I'm currently thinking about.
           </p>
         </header>
                 <div class="home-body">
           <p>
-            You're meant to wander around the garden, the graph on the right <em>is</em> the navigation.There's no set path — wander where you like. 
+            This is a "Garden" You're meant to wander, the graph on the right <em>is</em> the navigation. There's no set path — wander where you like. 
           </p>
         </div>
 
         <!-- ── Jump-off cards ──────────────────────────────────────── -->
         <div class="home-jumpoff">
-          <p class="home-jumpoff-label">Interesting Places to Start</p>
+          <p class="home-jumpoff-label">Overwhelmed? Confused? Here are a few Interesting Places to Start</p>
           <div class="home-cards">
             {jumpOff.map((item) => {
               const isRandom   = item.slug === '__random__';

@@ -1,8 +1,8 @@
 /**
  * graph-builder.ts
- * Astro integration that parses vault/*.md and emits:
- *   public/graph.json          — full graph
- *   public/graph/[id].json     — 1-hop neighbourhood for each published note
+ * Astro integration that parses vault/*.md and emits public/graph.json — the
+ * full vault graph, consumed by both the landing-page graph and the per-note
+ * sidebar graph.
  *
  * Runs on:  astro:config:done  (fires in BOTH `dev` and `build` modes before
  * content collections are processed, so the React graph island always has
@@ -18,7 +18,6 @@ import fg from 'fast-glob';
 import { parseNote, slugify } from '../lib/vault-parser.js';
 import { buildResolverIndex, resolveWikilink } from '../lib/link-resolver.js';
 import type { GraphNode, GraphLink, GraphData, NodeShape } from '../lib/types.js';
-import type { NoteGraphData, NoteRef } from '../lib/graph-types.js';
 import { detectGitHubPagesBase, withBasePath } from '../lib/hosting';
 
 // ─── Tag colour palette ───────────────────────────────────────────────────────
@@ -52,7 +51,6 @@ async function buildGraph(projectRoot: string, logger?: { info: (s: string) => v
   const vaultRoot = path.join(projectRoot, 'vault');
   const basePath = detectGitHubPagesBase();
   const publicDir = path.join(projectRoot, 'public');
-  const graphDir = path.join(publicDir, 'graph');
 
   // ── 1. Glob all .md files ──────────────────────────────────────────────────
   const mdFiles = await fg('**/*.md', {
@@ -235,75 +233,6 @@ async function buildGraph(projectRoot: string, logger?: { info: (s: string) => v
     'utf-8',
   );
   log.info(`Wrote public/graph.json (${nodes.length} nodes, ${dedupedLinks.length} links)`);
-
-  // ── 11. Write per-note public/graph/[id].json ──────────────────────────────
-
-  if (!existsSync(graphDir)) mkdirSync(graphDir, { recursive: true });
-
-  // Pre-build adjacency: nodeId → Set of adjacent nodeIds
-  const adjacency = new Map<string, Set<string>>();
-  const addEdge = (a: string, b: string) => {
-    if (!adjacency.has(a)) adjacency.set(a, new Set());
-    if (!adjacency.has(b)) adjacency.set(b, new Set());
-    adjacency.get(a)!.add(b);
-    adjacency.get(b)!.add(a);
-  };
-  for (const link of dedupedLinks) addEdge(link.source, link.target);
-
-  // Pre-build backlink map: noteId → Set of noteIds that link TO it (wikilinks only)
-  const backlinkMap = new Map<string, Set<string>>();
-  for (const link of dedupedLinks) {
-    if (link.type !== 'wikilink') continue;
-    if (!backlinkMap.has(link.target)) backlinkMap.set(link.target, new Set());
-    backlinkMap.get(link.target)!.add(link.source);
-  }
-
-  for (const note of publishedNotes) {
-    const centerNodeId = note.id;
-    const neighbors = adjacency.get(centerNodeId) ?? new Set<string>();
-    const subsetIds = new Set<string>([centerNodeId, ...neighbors]);
-
-    // Nodes in 1-hop neighbourhood
-    const subNodes = [...subsetIds]
-      .map((id) => nodeMap.get(id))
-      .filter(Boolean) as GraphNode[];
-
-    // Links where BOTH endpoints are in the subset
-    const subLinks = dedupedLinks.filter(
-      (l) => subsetIds.has(l.source) && subsetIds.has(l.target),
-    );
-
-    // Backlinks: file nodes that wikilink TO this note
-    const backlinkIds = backlinkMap.get(centerNodeId) ?? new Set<string>();
-    const backlinks: NoteRef[] = [...backlinkIds]
-      .map((id) => nodeMap.get(id))
-      .filter((n): n is GraphNode => n?.type === 'file')
-      .map((n) => ({ id: n.id, name: n.name, path: n.path }));
-
-    // Forward links: file nodes this note wikilinks TO
-    const forwardLinkIds = dedupedLinks
-      .filter((l) => l.source === centerNodeId && l.type === 'wikilink')
-      .map((l) => l.target);
-    const forwardLinks: NoteRef[] = forwardLinkIds
-      .map((id) => nodeMap.get(id))
-      .filter((n): n is GraphNode => n?.type === 'file')
-      .map((n) => ({ id: n.id, name: n.name, path: n.path }));
-
-    const noteGraph: NoteGraphData = {
-      nodes: subNodes,
-      links: subLinks,
-      backlinks,
-      forwardLinks,
-    };
-
-    writeFileSync(
-      path.join(graphDir, `${centerNodeId}.json`),
-      JSON.stringify(noteGraph, null, 2),
-      'utf-8',
-    );
-  }
-
-  log.info(`Wrote ${publishedNotes.length} per-note JSON files to public/graph/`);
 }
 
 // ─── Astro integration ────────────────────────────────────────────────────────
